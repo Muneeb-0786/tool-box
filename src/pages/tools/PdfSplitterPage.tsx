@@ -108,7 +108,7 @@ export default function PdfSplitterPage() {
       copiedPages.forEach(page => newPdf.addPage(page));
       
       const pdfBytes = await newPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes.buffer], { type: 'application/pdf' });
       
       const fileName = file.name.replace('.pdf', '') + `_pages_${pages.join('-')}.pdf`;
       saveAs(blob, fileName);

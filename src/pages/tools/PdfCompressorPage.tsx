@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { DocumentArrowDownIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { useDropzone } from 'react-dropzone';
-import { PDFDocument, PDFName } from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
 import { toast } from 'react-hot-toast';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import AdBanner from '../../components/AdBanner';

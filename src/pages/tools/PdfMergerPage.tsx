@@ -117,7 +117,7 @@ export default function PdfMergerPage() {
       }
 
       const pdfBytes = await mergedPdf.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes.buffer], { type: 'application/pdf' });
       saveAs(blob, 'merged-document.pdf');
       
       toast.success('PDFs merged successfully!');
