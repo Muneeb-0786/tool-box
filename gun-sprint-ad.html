@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gun Sprint - Playable Ad</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            overflow: hidden;
+            user-select: none;
+            touch-action: manipulation;
+            height: 100vh;
+        }
+        
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            cursor: crosshair;
+        }
+        
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        .title {
+            font-size: 2.8em;
+            font-weight: 800;
+            margin-bottom: 5px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #ff3838, #ff9f43);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 2s ease infinite;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            font-weight: 400;
+            opacity: 0.9;
+            color: white;
+        }
+        
+        .game-ui {
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+        }
+        
+        .ui-stat {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 2px;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+        
+        .instructions {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 500;
+            opacity: 0.9;
+            background: rgba(0,0,0,0.3);
+            padding: 15px 30px;
+            border-radius: 25px;
+            border: 2px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .cta-button {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(145deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.4em;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            animation: ctaBounce 2s ease-in-out infinite;
+        }
+        
+        .cta-button:hover {
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+        }
+        
+        .combo-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffd700;
+            font-size: 3em;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .end-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+            pointer-events: auto;
+            z-index: 200;
+        }
+        
+        .end-card.show {
+            display: flex;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .end-title {
+            font-size: 3em;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        .end-score {
+            font-size: 2em;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #feca57;
+        }
+        
+        .end-message {
+            font-size: 1.3em;
+            font-weight: 500;
+            margin-bottom: 40px;
+            line-height: 1.4;
+            max-width: 400px;
+        }
+        
+        .end-cta {
+            background: linear-gradient(145deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.5em;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+            animation: ctaFlash 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        
+        .restart-btn {
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            font-size: 0.9em;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .restart-btn:hover {
+            color: white;
+            border-color: white;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.9; transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+        }
+        
+        @keyframes ctaBounce {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.03); }
+        }
+        
+        @keyframes ctaFlash {
+            0%, 100% { box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6); }
+            50% { box-shadow: 0 8px 35px rgba(255, 107, 107, 0.9); }
+        }
+        
+        @keyframes comboShow {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @media (max-width: 480px) {
+            .title { font-size: 2.2em; }
+            .instructions { font-size: 1em; bottom: 100px; padding: 12px 25px; }
+            .cta-button { font-size: 1.2em; padding: 15px 35px; }
+            .game-ui { gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div class="ui-overlay">
+            <div class="header">
+                <div class="title">GUN SPRINT</div>
+                <div class="subtitle">Tap to shoot! Hold to sprint!</div>
+            </div>
+            
+            <div class="game-ui">
+                <div class="ui-stat">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+                <div class="ui-stat">
+                    <div class="stat-label">Time</div>
+                    <div class="stat-value" id="timer">12</div>
+                </div>
+                <div class="ui-stat">
+                    <div class="stat-label">Kills</div>
+                    <div class="stat-value" id="kills">0</div>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                🎯 TAP to SHOOT • HOLD to SPRINT 🏃‍♂️
+            </div>
+            
+            <button class="cta-button" onclick="downloadApp()">
+                🚀 PLAY FULL VERSION!
+            </button>
+            
+            <div class="combo-display" id="comboDisplay"></div>
+        </div>
+        
+        <div class="end-card" id="endCard">
+            <div class="end-title">MISSION COMPLETE!</div>
+            <div class="end-score" id="finalScore">Final Score: 0</div>
+            <div class="end-message">
+                Install now to play the full game!<br>
+                🔥 Unlimited levels<br>
+                🎯 Epic boss battles<br>
+                💪 Power-ups & upgrades
+            </div>
+            <button class="end-cta" onclick="downloadApp()">INSTALL NOW</button>
+            <button class="restart-btn" onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+    <script>
+        class GunSprintGame extends Phaser.Scene {
+            constructor() {
+                super({ key: 'GunSprintGame' });
+                this.player = null;
+                this.bullets = null;
+                this.enemies = null;
+                this.score = 0;
+                this.kills = 0;
+                this.gameTime = 12000;
+                this.startTime = 0;
+                this.isGameOver = false;
+                this.isSprinting = false;
+                this.lastEnemySpawn = 0;
+                this.enemySpawnRate = 1200;
+                this.groundY = null;
+                this.playerSpeed = 150;
+                this.sprintMultiplier = 1.8;
+                this.bulletSpeed = 600;
+                this.enemySpeed = 100;
+                this.combo = 0;
+                this.lastKillTime = 0;
+                
+                // Particle systems
+                this.particles = [];
+                this.muzzleFlashes = [];
+            }
+
+            preload() {
+                // No external assets needed
+            }
+
+            create() {
+                this.startTime = this.time.now;
+                
+                // Calculate responsive dimensions
+                const width = this.cameras.main.width;
+                const height = this.cameras.main.height;
+                this.groundY = height - 80;
+                
+                // Create gradient background
+                this.createBackground();
+                
+                // Create player
+                this.player = this.add.rectangle(80, this.groundY - 20, 25, 35, 0x00ff88);
+                this.player.setStroke(2, 0xffffff);
+                
+                // Add player weapon
+                this.playerWeapon = this.add.rectangle(95, this.groundY - 20, 15, 4, 0x444444);
+                
+                // Create groups
+                this.bullets = this.add.group();
+                this.enemies = this.add.group();
+                this.particles = this.add.group();
+                
+                // Setup input
+                this.input.on('pointerdown', this.onPointerDown, this);
+                this.input.on('pointerup', this.onPointerUp, this);
+                
+                // Create background effects
+                this.createBackgroundEffects();
+                
+                // Start game
+                this.time.delayedCall(this.gameTime, this.endGame, [], this);
+            }
+            
+            createBackground() {
+                const width = this.cameras.main.width;
+                const height = this.cameras.main.height;
+                
+                // Sky gradient
+                const sky = this.add.rectangle(width/2, height/2, width, height, 0x1a1a2e);
+                
+                // Ground
+                const ground = this.add.rectangle(width/2, this.groundY + 40, width, 80, 0x2c3e50);
+                ground.setStroke(2, 0x34495e);
+                
+                // Add some building silhouettes
+                for (let i = 0; i < 8; i++) {
+                    const building = this.add.rectangle(
+                        (i * width/8) + Math.random() * 40,
+                        this.groundY - Math.random() * 100 - 50,
+                        30 + Math.random() * 20,
+                        100 + Math.random() * 80,
+                        0x0f1419
+                    );
+                    building.alpha = 0.6;
+                }
+            }
+            
+            createBackgroundEffects() {
+                // Floating particles
+                for (let i = 0; i < 15; i++) {
+                    const particle = this.add.circle(
+                        Math.random() * this.cameras.main.width,
+                        Math.random() * this.cameras.main.height,
+                        2 + Math.random() * 3,
+                        0xffd700
+                    );
+                    particle.alpha = 0.3 + Math.random() * 0.4;
+                    particle.setData('speedX', -20 - Math.random() * 30);
+                    particle.setData('speedY', Math.sin(Math.random() * Math.PI) * 20);
+                    this.particles.add(particle);
+                }
+            }
+
+            update(time, delta) {
+                if (this.isGameOver) return;
+
+                // Update timer
+                const elapsed = time - this.startTime;
+                const remainingTime = Math.max(0, Math.ceil((this.gameTime - elapsed) / 1000));
+                document.getElementById('timer').textContent = remainingTime;
+
+                // Player running animation
+                this.player.y = this.groundY - 20 + Math.sin(time * 0.015) * 3;
+                this.playerWeapon.y = this.player.y;
+                
+                // Sprint effect
+                if (this.isSprinting) {
+                    this.player.scaleX = 1.1;
+                    this.player.tint = 0xffff88;
+                    this.createSprintParticles();
+                } else {
+                    this.player.scaleX = 1;
+                    this.player.tint = 0xffffff;
+                }
+
+                // Spawn enemies
+                if (time - this.lastEnemySpawn > this.enemySpawnRate) {
+                    this.spawnEnemy();
+                    this.lastEnemySpawn = time;
+                }
+
+                // Update bullets
+                this.bullets.children.entries.forEach(bullet => {
+                    bullet.x += this.bulletSpeed * (delta / 1000);
+                    if (bullet.x > this.cameras.main.width + 50) {
+                        bullet.destroy();
+                    }
+                });
+
+                // Update enemies
+                const enemyMoveSpeed = this.isSprinting ? 
+                    this.enemySpeed * this.sprintMultiplier : this.enemySpeed;
+                
+                this.enemies.children.entries.forEach(enemy => {
+                    enemy.x -= enemyMoveSpeed * (delta / 1000);
+                    enemy.rotation += 0.05;
+                    if (enemy.x < -50) {
+                        enemy.destroy();
+                    }
+                });
+                
+                // Update background particles
+                this.particles.children.entries.forEach(particle => {
+                    particle.x += particle.getData('speedX') * (delta / 1000);
+                    particle.y += particle.getData('speedY') * (delta / 1000);
+                    
+                    if (particle.x < -20) {
+                        particle.x = this.cameras.main.width + 20;
+                        particle.y = Math.random() * this.cameras.main.height;
+                    }
+                });
+
+                // Check collisions
+                this.checkCollisions();
+            }
+
+            onPointerDown(pointer) {
+                if (this.isGameOver) return;
+                
+                this.shootBullet();
+                this.isSprinting = true;
+            }
+
+            onPointerUp() {
+                this.isSprinting = false;
+            }
+
+            shootBullet() {
+                const bullet = this.add.rectangle(
+                    this.player.x + 25, 
+                    this.player.y, 
+                    12, 4, 
+                    0xffff00
+                );
+                bullet.setStroke(1, 0xffffff);
+                this.bullets.add(bullet);
+                
+                // Muzzle flash effect
+                this.createMuzzleFlash();
+            }
+            
+            createMuzzleFlash() {
+                const flash = this.add.circle(this.player.x + 30, this.player.y, 8, 0xffffff);
+                flash.alpha = 0.8;
+                
+                this.tweens.add({
+                    targets: flash,
+                    alpha: 0,
+                    scaleX: 2,
+                    scaleY: 2,
+                    duration: 100,
+                    onComplete: () => flash.destroy()
+                });
+            }
+            
+            createSprintParticles() {
+                if (Math.random() < 0.3) {
+                    const particle = this.add.circle(
+                        this.player.x - 10,
+                        this.player.y + Math.random() * 20 - 10,
+                        2 + Math.random() * 2,
+                        0x00ff88
+                    );
+                    particle.alpha = 0.6;
+                    
+                    this.tweens.add({
+                        targets: particle,
+                        x: particle.x - 30,
+                        alpha: 0,
+                        duration: 500,
+                        onComplete: () => particle.destroy()
+                    });
+                }
+            }
+
+            spawnEnemy() {
+                const enemy = this.add.rectangle(
+                    this.cameras.main.width + 30, 
+                    this.groundY - 15 - Math.random() * 30, 
+                    20 + Math.random() * 15, 
+                    20 + Math.random() * 15, 
+                    0xff3838
+                );
+                enemy.setStroke(2, 0xff6b6b);
+                this.enemies.add(enemy);
+            }
+
+            checkCollisions() {
+                this.bullets.children.entries.forEach(bullet => {
+                    this.enemies.children.entries.forEach(enemy => {
+                        if (this.isOverlapping(bullet, enemy)) {
+                            // Hit effect
+                            this.createHitEffect(enemy.x, enemy.y);
+                            
+                            bullet.destroy();
+                            enemy.destroy();
+                            
+                            // Update score with combo
+                            const currentTime = this.time.now;
+                            if (currentTime - this.lastKillTime < 1000) {
+                                this.combo++;
+                            } else {
+                                this.combo = 1;
+                            }
+                            this.lastKillTime = currentTime;
+                            
+                            const points = 10 * this.combo;
+                            this.score += points;
+                            this.kills++;
+                            
+                            // Show combo
+                            if (this.combo > 1) {
+                                this.showCombo();
+                            }
+                            
+                            // Update UI
+                            document.getElementById('score').textContent = this.score;
+                            document.getElementById('kills').textContent = this.kills;
+                        }
+                    });
+                });
+            }
+            
+            createHitEffect(x, y) {
+                // Explosion particles
+                for (let i = 0; i < 8; i++) {
+                    const particle = this.add.circle(x, y, 3, 0xff6b6b);
+                    const angle = (i / 8) * Math.PI * 2;
+                    const speed = 100 + Math.random() * 100;
+                    
+                    this.tweens.add({
+                        targets: particle,
+                        x: x + Math.cos(angle) * speed,
+                        y: y + Math.sin(angle) * speed,
+                        alpha: 0,
+                        scaleX: 0.1,
+                        scaleY: 0.1,
+                        duration: 400,
+                        onComplete: () => particle.destroy()
+                    });
+                }
+            }
+            
+            showCombo() {
+                const comboDisplay = document.getElementById('comboDisplay');
+                comboDisplay.textContent = `${this.combo}x COMBO!`;
+                comboDisplay.style.animation = 'none';
+                setTimeout(() => {
+                    comboDisplay.style.animation = 'comboShow 1s ease-out';
+                }, 10);
+            }
+
+            isOverlapping(obj1, obj2) {
+                const distance = Phaser.Math.Distance.Between(obj1.x, obj1.y, obj2.x, obj2.y);
+                return distance < 25;
+            }
+
+            endGame() {
+                this.isGameOver = true;
+                document.getElementById('finalScore').textContent = `Final Score: ${this.score}`;
+                document.getElementById('endCard').classList.add('show');
+            }
+        }
+
+        // Game configuration
+        const config = {
+            type: Phaser.AUTO,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            parent: 'game-container',
+            backgroundColor: 'transparent',
+            scene: GunSprintGame,
+            scale: {
+                mode: Phaser.Scale.RESIZE,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            },
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            audio: {
+                disableWebAudio: true
+            }
+        };
+
+        // Global functions
+        function downloadApp() {
+            const gameInstance = game.scene.scenes[0];
+            alert(`🎮 Amazing! You scored ${gameInstance.score} points with ${gameInstance.kills} kills!\n\n🚀 Redirecting to App Store...\n\nIn the full version:\n• 100+ Action-packed levels\n• Epic boss battles\n• Weapon upgrades\n• Multiplayer competitions`);
+            window.open('https://play.google.com/store', '_blank');
+        }
+        
+        function restartGame() {
+            document.getElementById('endCard').classList.remove('show');
+            game.scene.restart('GunSprintGame');
+        }
+
+        // Initialize game
+        let game;
+        window.onload = () => {
+            game = new Phaser.Game(config);
+        };
+
+        // Prevent context menu and default touch behaviors
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+        document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        document.addEventListener('touchend', e => e.preventDefault(), { passive: false });
+    </script>
+</body>
+</html>
